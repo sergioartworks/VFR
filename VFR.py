@@ -233,7 +233,7 @@ endtime_label1 = ttk.Label(tab1, text="終了時間:")
 endtime_box1 = ttk.Entry(tab1, textvariable=end_time1)
 
 # ウィジェット（アスペクト比変更）
-aspectframe_labelframe1 = ttk.LabelFrame(tab1, relief='raised', text="アスペクト比")
+aspectframe_labelframe1 = ttk.LabelFrame(tab1, relief='groove', text="アスペクト比")
 aspect_keep_radiobutton1 = ttk.Radiobutton(aspectframe_labelframe1, text="維持する", value=AR_KEEP, variable=aspect1)
 aspect_16_9_radiobutton1 = ttk.Radiobutton(aspectframe_labelframe1, text="16:9", value=AR_16_9, variable=aspect1)
 aspect_4_3_radiobutton1 = ttk.Radiobutton(aspectframe_labelframe1, text="4:3", value=AR_4_3, variable=aspect1)
@@ -245,28 +245,38 @@ playVF_checkbutton1 = ttk.Checkbutton(tab1, text="変換終了後に出力ファ
 is_reEncode1.set(NO)
 is_playVF1.set(YES)
 
+# 進捗表示
+progressframe1 = ttk.LabelFrame(tab1, relief='groove')
+remaintime1 = ttk.Label(progressframe1, text="残り時間: 00:00:00")
+progressbar1 = ttk.Progressbar(progressframe1)
+percent1 = ttk.Label(progressframe1, text="100%")
+
 # ウィジェット（実行ボタン）
 app_btn1 = ttk.Button(tab1, text="実行", command=convertMP4)
 
 # ウィジェットの配置
-folder_label1.place(relx=0.05, rely=0.089, height=31, width=74)
-folder_box1.place(relx=0.183, rely=0.089, height=31, relwidth=0.67)
-folder_btn1.place(relx=0.867, rely=0.089, height=31, width=57)
-filename_label1.place(relx=0.05, rely=0.178, height=31, width=74)
-filename_box1.place(relx=0.183, rely=0.178, height=31, relwidth=0.67)
-filename_btn1.place(relx=0.867, rely=0.178, height=31, width=57)
-separator1.place(relx=0.05, rely=0.32,  relwidth=0.915)
-starttime_label1.place(relx=0.067, rely=0.4, height=31, width=64)
-starttime_box1.place(relx=0.183, rely=0.4, height=27, relwidth=0.173)
-endtime_label1.place(relx=0.067, rely=0.489, height=31, width=64)
-endtime_box1.place(relx=0.183, rely=0.489, height=27, relwidth=0.173)
-aspectframe_labelframe1.place(relx=0.517, rely=0.378, relheight=0.278, relwidth=0.367)
+folder_label1.place(relx=0.05, rely=0.067, height=31, width=74)
+folder_box1.place(relx=0.183, rely=0.067, height=31, relwidth=0.67)
+folder_btn1.place(relx=0.867, rely=0.067, height=31, width=57)
+filename_label1.place(relx=0.05, rely=0.156, height=31, width=74)
+filename_box1.place(relx=0.183, rely=0.156, height=31, relwidth=0.67)
+filename_btn1.place(relx=0.867, rely=0.156, height=31, width=57)
+separator1.place(relx=0.05, rely=0.289,  relwidth=0.915)
+starttime_label1.place(relx=0.067, rely=0.356, height=31, width=64)
+starttime_box1.place(relx=0.183, rely=0.356, height=27, relwidth=0.173)
+endtime_label1.place(relx=0.067, rely=0.444, height=31, width=64)
+endtime_box1.place(relx=0.183, rely=0.444, height=27, relwidth=0.173)
+aspectframe_labelframe1.place(relx=0.517, rely=0.333, relheight=0.278, relwidth=0.367)
 aspect_keep_radiobutton1.place(relx=0.091, rely=0.16, relheight=0.28, relwidth=0.586, bordermode='ignore')
 aspect_16_9_radiobutton1.place(relx=0.091, rely=0.4, relheight=0.28, relwidth=0.445, bordermode='ignore')
 aspect_4_3_radiobutton1.place(relx=0.091, rely=0.64, relheight=0.28, relwidth=0.277, bordermode='ignore')
-reEncode_checkbutton1.place(relx=0.1, rely=0.667, relheight=0.078, relwidth=0.3)
-playVF_checkbutton1.place(relx=0.1, rely=0.733, relheight=0.078, relwidth=0.4)
-app_btn1.place(relx=0.417, rely=0.844, height=44, width=107)
+reEncode_checkbutton1.place(relx=0.067, rely=0.578, relheight=0.078, relwidth=0.3)
+playVF_checkbutton1.place(relx=0.067, rely=0.644, relheight=0.078, relwidth=0.4)
+progressframe1.place(relx=0.05, rely=0.77, relheight=0.18, relwidth=0.642)
+remaintime1.place(relx=0.35, rely=0, relheight=0.354, relwidth=0.556)
+progressbar1.place(relx=0.05, rely=0.49, relwidth=0.825, relheight=0.0, height=18)
+percent1.place(relx=0.9, rely=0.464, relheight=0.354, relwidth=0.13)
+app_btn1.place(relx=0.783, rely=0.844, height=44, width=107)
 
 
 ###
@@ -276,7 +286,7 @@ app_btn1.place(relx=0.417, rely=0.844, height=44, width=107)
 # パラメータ
 folder_path2 = tkinter.StringVar()
 file_name2 = tkinter.StringVar()
-is_playVF2 = tkinter.StringVar()
+is_playVF2 = tkinter.IntVar()
 
 # ウィジェット（フォルダ名）
 folder_label2 = ttk.Label(tab2, text="入力フォルダ:")
@@ -301,15 +311,15 @@ is_playVF2.set(YES)
 app_btn2 = ttk.Button(tab2, text="実行", command=merge)
 
 # ウィジェットの配置
-folder_label2.place(relx=0.05, rely=0.089, height=31, width=74)
-folder_box2.place(relx=0.183, rely=0.089, height=31, relwidth=0.67)
-folder_btn2.place(relx=0.867, rely=0.089, height=31, width=57)
-filename_label2.place(relx=0.05, rely=0.178, height=31, width=74)
-filename_box2.place(relx=0.183, rely=0.178, height=31, relwidth=0.67)
-filename_btn2.place(relx=0.867, rely=0.178, height=31, width=57)
-separator2.place(relx=0.05, rely=0.32,  relwidth=0.915)
-playVF_checkbutton2.place(relx=0.1, rely=0.733, relheight=0.078, relwidth=0.4)
-app_btn2.place(relx=0.417, rely=0.844, height=44, width=107)
+folder_label2.place(relx=0.05, rely=0.067, height=31, width=74)
+folder_box2.place(relx=0.183, rely=0.067, height=31, relwidth=0.67)
+folder_btn2.place(relx=0.867, rely=0.067, height=31, width=57)
+filename_label2.place(relx=0.05, rely=0.156, height=31, width=74)
+filename_box2.place(relx=0.183, rely=0.156, height=31, relwidth=0.67)
+filename_btn2.place(relx=0.867, rely=0.156, height=31, width=57)
+separator2.place(relx=0.05, rely=0.289,  relwidth=0.915)
+playVF_checkbutton2.place(relx=0.067, rely=0.644, relheight=0.078, relwidth=0.4)
+app_btn2.place(relx=0.783, rely=0.844, height=44, width=107)
 
 
 ###
@@ -321,7 +331,7 @@ file_name3_1 = tkinter.StringVar()
 file_name3_2 = tkinter.StringVar()
 start_time3 = tkinter.StringVar()
 end_time3 = tkinter.StringVar()
-is_playVF3 = tkinter.StringVar()
+is_playVF3 = tkinter.IntVar()
 
 # ウィジェット（ファイル名）
 filename_label3_1 = ttk.Label(tab3, text="入力ファイル:")
@@ -354,19 +364,19 @@ is_playVF3.set(YES)
 app_btn3 = ttk.Button(tab3, text="実行", command=cut)
 
 # ウィジェットの配置
-filename_label3_1.place(relx=0.05, rely=0.089, height=31, width=74)
-filename_box3_1.place(relx=0.183, rely=0.089, height=31, relwidth=0.67)
-filename_btn3_1.place(relx=0.867, rely=0.089, height=31, width=57)
-filename_label3_2.place(relx=0.05, rely=0.178, height=31, width=74)
-filename_box3_2.place(relx=0.183, rely=0.178, height=31, relwidth=0.67)
-filename_btn3_2.place(relx=0.867, rely=0.178, height=31, width=57)
-separator3.place(relx=0.05, rely=0.32,  relwidth=0.915)
-starttime_label3.place(relx=0.067, rely=0.4, height=31, width=64)
-starttime_box3.place(relx=0.183, rely=0.4, height=27, relwidth=0.173)
-endtime_label3.place(relx=0.067, rely=0.489, height=31, width=64)
-endtime_box3.place(relx=0.183, rely=0.489, height=27, relwidth=0.173)
-playVF_checkbutton3.place(relx=0.1, rely=0.733, relheight=0.078, relwidth=0.4)
-app_btn3.place(relx=0.417, rely=0.844, height=44, width=107)
+filename_label3_1.place(relx=0.05, rely=0.067, height=31, width=74)
+filename_box3_1.place(relx=0.183, rely=0.067, height=31, relwidth=0.67)
+filename_btn3_1.place(relx=0.867, rely=0.067, height=31, width=57)
+filename_label3_2.place(relx=0.05, rely=0.156, height=31, width=74)
+filename_box3_2.place(relx=0.183, rely=0.156, height=31, relwidth=0.67)
+filename_btn3_2.place(relx=0.867, rely=0.156, height=31, width=57)
+separator3.place(relx=0.05, rely=0.289,  relwidth=0.915)
+starttime_label3.place(relx=0.067, rely=0.356, height=31, width=64)
+starttime_box3.place(relx=0.183, rely=0.356, height=27, relwidth=0.173)
+endtime_label3.place(relx=0.067, rely=0.444, height=31, width=64)
+endtime_box3.place(relx=0.183, rely=0.444, height=27, relwidth=0.173)
+playVF_checkbutton3.place(relx=0.067, rely=0.644, relheight=0.078, relwidth=0.4)
+app_btn3.place(relx=0.783, rely=0.844, height=44, width=107)
 
 
 ###
@@ -376,8 +386,8 @@ app_btn3.place(relx=0.417, rely=0.844, height=44, width=107)
 # パラメータ
 file_name4_1 = tkinter.StringVar()
 file_name4_2 = tkinter.StringVar()
-aspect4 = tkinter.StringVar()
-is_playVF4 = tkinter.StringVar()
+aspect4 = tkinter.IntVar()
+is_playVF4 = tkinter.IntVar()
 
 # ウィジェット（ファイル名）
 filename_label4_1 = ttk.Label(tab4, text="入力ファイル:")
@@ -408,24 +418,22 @@ is_playVF4.set(YES)
 app_btn4 = ttk.Button(tab4, text="実行", command=change_aspect_ratio)
 
 # ウィジェットの配置
-filename_label4_1.place(relx=0.05, rely=0.089, height=31, width=74)
-filename_box4_1.place(relx=0.183, rely=0.089, height=31, relwidth=0.67)
-filename_btn4_1.place(relx=0.867, rely=0.089, height=31, width=57)
-filename_label4_2.place(relx=0.05, rely=0.178, height=31, width=74)
-filename_box4_2.place(relx=0.183, rely=0.178, height=31, relwidth=0.67)
-filename_btn4_2.place(relx=0.867, rely=0.178, height=31, width=57)
-separator4.place(relx=0.05, rely=0.32,  relwidth=0.915)
-aspectframe_labelframe4.place(relx=0.517, rely=0.378, relheight=0.23, relwidth=0.367)
+filename_label4_1.place(relx=0.05, rely=0.067, height=31, width=74)
+filename_box4_1.place(relx=0.183, rely=0.067, height=31, relwidth=0.67)
+filename_btn4_1.place(relx=0.867, rely=0.067, height=31, width=57)
+filename_label4_2.place(relx=0.05, rely=0.156, height=31, width=74)
+filename_box4_2.place(relx=0.183, rely=0.156, height=31, relwidth=0.67)
+filename_btn4_2.place(relx=0.867, rely=0.156, height=31, width=57)
+separator4.place(relx=0.05, rely=0.289,  relwidth=0.915)
+aspectframe_labelframe4.place(relx=0.517, rely=0.333, relheight=0.278, relwidth=0.367)
 aspect_16_9_radiobutton4.place(relx=0.091, rely=0.24, relheight=0.28, relwidth=0.445, bordermode='ignore')
 aspect_4_3_radiobutton4.place(relx=0.091, rely=0.54, relheight=0.28, relwidth=0.277, bordermode='ignore')
-playVF_checkbutton4.place(relx=0.1, rely=0.733, relheight=0.078, relwidth=0.4)
-app_btn4.place(relx=0.417, rely=0.844, height=44, width=107)
+playVF_checkbutton4.place(relx=0.067, rely=0.644, relheight=0.078, relwidth=0.4)
+app_btn4.place(relx=0.783, rely=0.844, height=44, width=107)
 
 
-# 配置設定
+# ウィンドウを伸縮させない設定
 main_win.columnconfigure(0, weight=1)
 main_win.rowconfigure(0, weight=1)
-tab1.columnconfigure(1, weight=1)
-tab2.columnconfigure(1, weight=1)
 
 main_win.mainloop()
