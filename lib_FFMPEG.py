@@ -3,6 +3,11 @@ import re
 import subprocess
 import pexpect
 from pexpect.popen_spawn import PopenSpawn
+import asyncio
+from collections import deque
+from datetime import timedelta
+import time
+from decimal import *
 
 
 ### 共通定数定義 ###
@@ -13,13 +18,25 @@ ABORT = -2
 YES = 1
 NO = 0
 
+RUNNING = 1
+STOP = -1
+
 AR_KEEP = 0
 AR_16_9 = 1
 AR_4_3 = 2
 ####################
 
 
-def convert(folder_path, file_name, start_time, end_time, aspect_ratio, is_reEncode):
+
+def timedelta_value(tc):
+
+    h, m, sf = tc.split(":")
+    s, ms = sf.split(".")
+    return timedelta(hours = int(h), minutes = int(m), seconds = int(s), microseconds = int(ms))
+
+
+async def convert(que, folder_path, file_name, start_time, end_time, aspect_ratio, is_reEncode):
+
     # フォルダ内のファイル一覧
     input_dir = Path(folder_path)
     input_files = sorted(input_dir.glob("**/*"))
@@ -69,19 +86,51 @@ def convert(folder_path, file_name, start_time, end_time, aspect_ratio, is_reEnc
             output_file
 
     print(command)
-    subprocess.run(command, shell=True)
+ #   subprocess.run(command, shell=True)
+ #   proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    thread = pexpect.popen_spawn.PopenSpawn(command)
 
-    # エラー判定
-    path = Path(output_file)
-    if path.stat().st_size == 0:
-        ret = FAIL
-    else:
-        ret = SUCCESS
+    cpl = thread.compile_pattern_list([
+        pexpect.EOF,
+        "^(frame=.*)",
+        '(.+)'
+    ])
 
-    return ret
+    lt = timedelta(milliseconds = int(time.time() * 1000)) #開始時刻
+    duration_total = timedelta()
+    # os.system('clear')
+
+    while (not re.compile('^Press').match(line)):
+        #i = i + 1
+        line = thread.readline().decode().strip()
+        if (re.compile('^Duration').match(line)):
+            duration_total = timedelta_value(line.split(',')[0].split(' ')[1])
+
+
+    while True:
+        index = thread.expect_list(cpl, timeout=None)
+        if index == 0: # EOF
+            t = (STOP, 0, 0)
+            que.append(t)
+            break
+        elif index == 1:
+            dt = timedelta(milliseconds = int(time.time() * 1000)) - lt #経過時間
+            line = thread.match.group(0).decode()
+            array = tuple(re.sub('=\s+', '=', line.strip()).split(' '))
+            current_time = timedelta_value(array[4].split('=')[1])
+            remain_time = timedelta(milliseconds = ((duration_total - current_time) / timedelta(milliseconds = (current_time / dt) * 1000) * 1000))
+            percentage = Decimal(current_time / duration_total * 100).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+            t = (RUNNING, remain_time, percentage)
+            que.append(t)
+            await asyncio.sleep(0.01)
+        elif index == 2:
+            #unknown_line = thread.match.group(0)
+            #print unknown_line
+            pass
 
 
 def merge(folder_path, file_name):
+
     # フォルダ内のファイル一覧
     input_dir = Path(folder_path)
     input_files = sorted(input_dir.glob("**/*"))
@@ -108,6 +157,7 @@ def merge(folder_path, file_name):
 
 
 def cut(input_file_name, output_file_name, start_time, end_time):
+
     # フォルダ内のファイル一覧
     input_file = input_file_name
     output_file = output_file_name
@@ -146,6 +196,7 @@ def cut(input_file_name, output_file_name, start_time, end_time):
 
 
 def changeAspectRatio(input_file_name, output_file_name, aspect_ratio):
+
     # フォルダ内のファイル一覧
     input_file = input_file_name
     output_file = output_file_name
@@ -177,3 +228,5 @@ def changeAspectRatio(input_file_name, output_file_name, aspect_ratio):
         ret = SUCCESS
 
     return ret
+
+

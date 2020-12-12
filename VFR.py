@@ -1,8 +1,12 @@
+from pathlib import Path
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import subprocess
+import asyncio
+from collections import deque
+from tkinter.constants import RIGHT
 import lib_FFMPEG
 
 
@@ -13,6 +17,9 @@ ABORT = -2
 
 YES = 1
 NO = 0
+
+RUNNING = 1
+STOP = -1
 
 AR_KEEP = 0
 AR_16_9 = 1
@@ -76,6 +83,38 @@ def ask_filename4_2():
     file_name4_2.set(name)
 
 
+async def update_progress(que):
+
+    while True:
+        if que:
+            t = que.popleft()
+            status = t[0]
+            if status == RUNNING:
+                m, s = divmod(t[1].seconds, 60)
+                h, m = divmod(m, 60)
+                remain_time1.configure(text = ('%02d:%02d:%02d' % (h, m, s)))
+                if t[2] != 100:
+                    percent1.configure(text = ('{:4.1f}%'.format(t[2])))
+                else:
+                    percent1.configure(text = ('%d%%' % t[2]))
+                progressbar1.configure(value = t[2])
+                progressbar1.update()
+            elif status == STOP:
+                break
+            else:
+                pass
+        else:
+            await asyncio.sleep(0.01)
+
+
+def clear_progress():
+
+    remain_time1.configure(text = "00:00:00")
+    percent1.configure(text = "")
+    progressbar1.configure(value = 0)
+    progressbar1.update()
+
+
 def convertMP4():
     """ 処理実行
     """
@@ -88,16 +127,27 @@ def convertMP4():
 
     if not input_dir or not output_file:
         return
+
     # 変換実行
-    ret = lib_FFMPEG.convert(input_dir, output_file, s_time, e_time, apt, is_re_enc)
-    # メッセージボックス
-    if ret == SUCCESS:
+    q = deque([])
+    loop = asyncio.get_event_loop()
+    gather = asyncio.gather(
+        lib_FFMPEG.convert(q, input_dir, output_file, s_time, e_time, apt, is_re_enc),
+        update_progress(q)
+    )
+    loop.run_until_complete(gather)
+    loop.close()
+
+    # エラー判定
+    path = Path(output_file)
+    if path.stat().st_size != 0:
         messagebox.showinfo('完了', '変換が完了しました。')
         # 再生
         if is_playVF1.get() == YES:
             subprocess.Popen(['start', output_file], shell=True)
     else:
         messagebox.showinfo('完了', '変換に失敗しました。')
+    clear_progress()
 
 
 def merge():
@@ -208,6 +258,7 @@ end_time1 = tkinter.StringVar()
 aspect1 = tkinter.IntVar()
 is_reEncode1 = tkinter.IntVar()
 is_playVF1 = tkinter.IntVar()
+pbval1 = tkinter.IntVar()
 
 # ウィジェット（フォルダ名）
 folder_label1 = ttk.Label(tab1, text="入力フォルダ:")
@@ -246,10 +297,11 @@ is_reEncode1.set(NO)
 is_playVF1.set(YES)
 
 # 進捗表示
-progressframe1 = ttk.LabelFrame(tab1, relief='groove')
-remaintime1 = ttk.Label(progressframe1, text="残り時間: 00:00:00")
-progressbar1 = ttk.Progressbar(progressframe1)
-percent1 = ttk.Label(progressframe1, text="100%")
+progressframe1 = ttk.Frame(tab1, relief='groove')
+remain_title1 = ttk.Label(progressframe1, text="残り時間:")
+remain_time1 = ttk.Label(progressframe1, text="00:00:00")
+progressbar1 = ttk.Progressbar(progressframe1, value=0)
+percent1 = ttk.Label(progressframe1, text="", anchor='e')
 
 # ウィジェット（実行ボタン）
 app_btn1 = ttk.Button(tab1, text="実行", command=convertMP4)
@@ -273,9 +325,10 @@ aspect_4_3_radiobutton1.place(relx=0.091, rely=0.64, relheight=0.28, relwidth=0.
 reEncode_checkbutton1.place(relx=0.067, rely=0.578, relheight=0.078, relwidth=0.3)
 playVF_checkbutton1.place(relx=0.067, rely=0.644, relheight=0.078, relwidth=0.4)
 progressframe1.place(relx=0.05, rely=0.77, relheight=0.18, relwidth=0.642)
-remaintime1.place(relx=0.35, rely=0, relheight=0.354, relwidth=0.556)
-progressbar1.place(relx=0.05, rely=0.49, relwidth=0.825, relheight=0.0, height=18)
-percent1.place(relx=0.9, rely=0.464, relheight=0.354, relwidth=0.13)
+remain_title1.place(relx=0.33, rely=0.1, relheight=0.354, relwidth=0.556)
+remain_time1.place(relx=0.48, rely=0.1, relheight=0.354, relwidth=0.3)
+progressbar1.place(relx=0.05, rely=0.59, relwidth=0.825, relheight=0.0, height=18)
+percent1.place(relx=0.88, rely=0.52, relheight=0.354, relwidth=0.1)
 app_btn1.place(relx=0.783, rely=0.844, height=44, width=107)
 
 
