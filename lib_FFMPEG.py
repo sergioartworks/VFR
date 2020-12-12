@@ -46,6 +46,17 @@ async def convert(que, folder_path, file_name, start_time, end_time, aspect_rati
     line = ''
     duration_total = 0
 
+    # 予め全input_fileの合計時間を取得
+    duration_total = timedelta()
+    for i in input_files:
+        command = \
+                "ffprobe -v quiet -of csv=p=0 -show_entries format=duration " + \
+                '"' +  i.as_posix() + '"'
+        thread = pexpect.popen_spawn.PopenSpawn(command)
+        line = thread.readline().decode().splitlines()
+        s = line[0].split('.')
+        duration_total = duration_total + timedelta(seconds=int(s[0]), microseconds=int(s[1]))
+
     # パラメータ設定
     if not start_time:                          # 開始時間
         ss = ""
@@ -86,26 +97,18 @@ async def convert(que, folder_path, file_name, start_time, end_time, aspect_rati
             output_file
 
     print(command)
+
  #   subprocess.run(command, shell=True)
  #   proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     thread = pexpect.popen_spawn.PopenSpawn(command)
+
+    lt = timedelta(milliseconds = int(time.time() * 1000)) #開始時刻
 
     cpl = thread.compile_pattern_list([
         pexpect.EOF,
         "^(frame=.*)",
         '(.+)'
     ])
-
-    lt = timedelta(milliseconds = int(time.time() * 1000)) #開始時刻
-    duration_total = timedelta()
-    # os.system('clear')
-
-    while (not re.compile('^Press').match(line)):
-        #i = i + 1
-        line = thread.readline().decode().strip()
-        if (re.compile('^Duration').match(line)):
-            duration_total = timedelta_value(line.split(',')[0].split(' ')[1])
-
 
     while True:
         index = thread.expect_list(cpl, timeout=None)
