@@ -8,6 +8,7 @@ import asyncio
 from collections import deque
 from tkinter.constants import RIGHT
 import lib_FFMPEG
+import os
 
 
 ### 共通定数定義 ###
@@ -100,6 +101,10 @@ async def update_progress(que):
                 progressbar1.configure(value = t[2])
                 progressbar1.update()
             elif status == STOP:
+                remain_time1.configure(text = "00:00:00")
+                percent1.configure(text = "100%")
+                progressbar1.configure(value = 100)
+                progressbar1.update()
                 break
             else:
                 pass
@@ -125,8 +130,18 @@ def convertMP4():
     apt = aspect1.get()
     is_re_enc = is_reEncode1.get()
 
-    if not input_dir or not output_file:
+    if not input_dir:
+        messagebox.showinfo('エラー', '入力フォルダが指定されていません。')
         return
+
+    if not output_file:
+        messagebox.showinfo('エラー', '出力ファイルが指定されていません。')
+        return
+
+    if not os.listdir(input_dir):
+        messagebox.showinfo('エラー', '入力ファイルがありません。')
+        return
+
 
     # 変換実行
     q = deque([])

@@ -127,10 +127,7 @@ async def convert(que, folder_path, file_name, start_time, end_time, aspect_rati
             que.append(t)
             await asyncio.sleep(0.01)
         elif index == 2:
-            #unknown_line = thread.match.group(0)
-            #print unknown_line
             pass
-
 
 def merge(folder_path, file_name):
 
