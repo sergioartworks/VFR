@@ -19,8 +19,12 @@ ABORT = -2
 YES = 1
 NO = 0
 
-RUNNING = 1
-STOP = -1
+ANALYZE_START = 1
+ANALYZING = 2
+ANALYZE_COMPLETE = 3
+CONVERT_START = 4
+CONVERTING = 5
+CONVERT_COMPLETE = 6
 
 AR_KEEP = 0
 AR_16_9 = 1
@@ -84,13 +88,27 @@ def ask_filename4_2():
     file_name4_2.set(name)
 
 
-async def update_progress(que):
+async def progress(que):
 
     while True:
         if que:
             t = que.popleft()
             status = t[0]
-            if status == RUNNING:
+            if status == ANALYZE_START:
+                remain_time1.configure(text = "計測中")
+                progressbar1.configure(maximum=5, mode = "indeterminate")
+                progressbar1.start(10)
+                progressbar1.update()
+            elif status == ANALYZING:
+                progressbar1.update()
+            elif status == ANALYZE_COMPLETE:
+                progressbar1.stop()
+                progressbar1.update()
+            elif status == CONVERT_START:
+                progressbar1.configure(maximum=100, value = 0, mode = "determinate")
+                percent1.configure(text = "0%")
+                progressbar1.update()
+            elif status == CONVERTING:
                 m, s = divmod(t[1].seconds, 60)
                 h, m = divmod(m, 60)
                 remain_time1.configure(text = ('%02d:%02d:%02d' % (h, m, s)))
@@ -100,7 +118,7 @@ async def update_progress(que):
                     percent1.configure(text = ('%d%%' % t[2]))
                 progressbar1.configure(value = t[2])
                 progressbar1.update()
-            elif status == STOP:
+            elif status == CONVERT_COMPLETE:
                 remain_time1.configure(text = "00:00:00")
                 percent1.configure(text = "100%")
                 progressbar1.configure(value = 100)
@@ -147,8 +165,9 @@ def convertMP4():
     q = deque([])
     loop = asyncio.get_event_loop()
     gather = asyncio.gather(
+        lib_FFMPEG.analyze(q, input_dir),
         lib_FFMPEG.convert(q, input_dir, output_file, s_time, e_time, apt, is_re_enc),
-        update_progress(q)
+        progress(q)
     )
     loop.run_until_complete(gather)
     loop.close()
