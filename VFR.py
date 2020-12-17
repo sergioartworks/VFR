@@ -139,6 +139,9 @@ def clear_progress():
 
 
 def convertMP4():
+
+    global loop
+
     """ 処理実行
     """
     input_dir = folder_path1.get()
@@ -163,14 +166,12 @@ def convertMP4():
 
     # 変換実行
     q = deque([])
-    loop = asyncio.get_event_loop()
     gather = asyncio.gather(
         lib_FFMPEG.analyze(q, input_dir),
         lib_FFMPEG.convert(q, input_dir, output_file, s_time, e_time, apt, is_re_enc),
         progress(q)
     )
     loop.run_until_complete(gather)
-    loop.close()
 
     # エラー判定
     path = Path(output_file)
@@ -247,6 +248,9 @@ def change_aspect_ratio():
     else:
         messagebox.showinfo('完了', 'アスペクト変更に失敗しました。')
     
+
+# 初期化処理
+loop = asyncio.get_event_loop()
 
 # メインウィンドウ
 main_win = tkinter.Tk()
