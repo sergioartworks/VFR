@@ -304,6 +304,7 @@ folder_btn1 = ttk.Button(tab1, text="参照", command=ask_folder1)
 filename_label1 = ttk.Label(tab1, text="出力ファイル:")
 filename_box1 = ttk.Entry(tab1, textvariable=file_name1)
 filename_box1.insert(0, "F:\DVD2MPG\output.mp4")
+#filename_box1.configure(state='readonly')
 filename_btn1 = ttk.Button(tab1, text="参照", command=ask_filename1)
 
 # ウィジェット（セパレータ）

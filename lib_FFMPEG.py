@@ -8,6 +8,7 @@ from collections import deque
 from datetime import timedelta
 import time
 from decimal import *
+import sys
 
 
 ### 共通定数定義 ###
@@ -62,7 +63,7 @@ async def analyze(que, folder_path):
             '-i "concat:' + "|".join([i.as_posix() for i in input_files]) + '" ' + \
             "-f null -"
 
-    thread = pexpect.popen_spawn.PopenSpawn(command)
+    thread = pexpect.popen_spawn.PopenSpawn(command, logfile=sys.stdout.buffer)
 
     cpl = thread.compile_pattern_list([
         pexpect.EOF,
@@ -154,7 +155,7 @@ async def convert(que, folder_path, file_name, start_time, end_time, aspect_rati
 
             #   subprocess.run(command, shell=True)
             #   proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            thread = pexpect.popen_spawn.PopenSpawn(command)
+            thread = pexpect.popen_spawn.PopenSpawn(command, logfile=sys.stdout.buffer)
 
             lt = timedelta(milliseconds = int(time.time() * 1000)) #開始時刻
 
