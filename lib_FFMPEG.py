@@ -61,6 +61,7 @@ async def analyze(que, folder_path):
     command = \
             "ffmpeg " + \
             '-i "concat:' + "|".join([i.as_posix() for i in input_files]) + '" ' + \
+            "-c:v h264_nvenc " + \
             "-f null -"
 
     thread = pexpect.popen_spawn.PopenSpawn(command, logfile=sys.stdout.buffer)
