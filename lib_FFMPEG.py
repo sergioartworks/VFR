@@ -26,6 +26,9 @@ CONVERT_START = 4
 CONVERTING = 5
 CONVERT_COMPLETE = 6
 
+H264 = 1
+H265 = 2
+
 AR_KEEP = 0
 AR_16_9 = 1
 AR_4_3 = 2
@@ -95,7 +98,61 @@ async def analyze(que, folder_path):
     await asyncio.sleep(0.01)
 
 
-async def convert(que, folder_path, file_name, start_time, end_time, aspect_ratio, is_reEncode):
+def generate_convert_command(in_files, out_file, cd, stime, etime, asp, isRE):
+
+    if cd == H264:      # H.264 パラメータ設定
+        param = \
+            "-pix_fmt yuv444p10le -level:v 4.0 -crf 18 -preset veryfast -tune film -qcomp 0.75 -vcodec libx264 "
+    elif cd == H265:    # H.265 パラメータ設定
+        param = \
+            "-pix_fmt yuv444p10le -level:v 4.0 -preset veryfast " + \
+            "-vcodec libx265 -x265-params " + '"' + \
+            "ctu=32:max-tu-size=16:crf=20.0:tu-intra-depth=2:" + \
+            "tu-inter-depth=2:rdpenalty=2:me=3:subme=5:merange=44:b-intra=1:amp=0:ref=5:" + \
+            "weightb=1:keyint=360:min-keyint=1:bframes=8:aq-mode=1:aq-strength=1.0:rd=5:" + \
+            "psy-rd=1.5:psy-rdoq=5.0:rdoq-level=1:sao=0:open-gop=0:rc-lookahead=80:scenecut=40:" + \
+            "max-merge=4:qcomp=0.8:strong-intra-smoothing=0:deblock=-2,-2:qg-size=16:pbratio=1.2" + \
+            '" '
+    if not stime:                          # 開始時間
+        ss = ""
+    else:
+        ss = "-ss " + stime + " "
+        
+    if not etime:                           # 終了時間
+        to = ""
+    else:
+        to = "-to " + etime + " "
+
+    if asp == AR_KEEP:            # アスペクト比
+        aspect = ""
+        bwdif = "-vf bwdif=1,pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
+    elif asp == AR_16_9:
+        aspect = "-aspect 16:9 "
+        bwdif = "-vf pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
+    elif asp == AR_4_3:
+        aspect = "-aspect 4:3 "
+        bwdif = "-vf pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
+
+    if isRE == NO and (not stime and not etime):        # 音声再エンコード
+        acopy = "-acodec copy "
+    else:
+        acopy = ""
+
+    cmd = \
+        "ffmpeg -y " + \
+        ss + \
+        to + \
+        '-i "concat:' + "|".join([i.as_posix() for i in in_files]) + '" ' + \
+        aspect + \
+        bwdif + \
+        param + \
+        acopy + \
+        out_file
+
+    return cmd
+
+
+async def convert(que, folder_path, file_name, codec, start_time, end_time, aspect_ratio, is_reEncode):
 
     global duration_total
     global is_analyze_complete
@@ -113,45 +170,8 @@ async def convert(que, folder_path, file_name, start_time, end_time, aspect_rati
             index = 0
             line = ''
 
-            # パラメータ設定
-            if not start_time:                          # 開始時間
-                ss = ""
-            else:
-                ss = "-ss " + start_time + " "
-        
-            if not end_time:                           # 終了時間
-                to = ""
-            else:
-                to = "-to " + end_time + " "
-
-            if  aspect_ratio == AR_KEEP:            # アスペクト比
-                aspect = ""
-                bwdif = "-vf bwdif=1,pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
-            elif  aspect_ratio == AR_16_9:
-                aspect = "-aspect 16:9 "
-                bwdif = "-vf pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
-            elif  aspect_ratio == AR_4_3:
-                aspect = "-aspect 4:3 "
-                bwdif = "-vf pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
-
-            if is_reEncode == NO and (not start_time and not end_time):        # 音声再エンコード
-                acopy = "-acodec copy "
-            else:
-                acopy = ""
-
-            # MP4変換
-            command = \
-                    "ffmpeg -y " + \
-                    ss + \
-                    to + \
-                    '-i "concat:' + "|".join([i.as_posix() for i in input_files]) + '" ' + \
-                    aspect + \
-                    bwdif + \
-                    "-vcodec libx264 -pix_fmt yuv444p10le -level:v 4.0 " + \
-                    acopy + \
-                    "-crf 18 -preset veryfast -tune film -threads 10 " + \
-                    output_file
-
+            # FFMPEG コマンド生成
+            command = generate_convert_command(input_files, output_file, codec, start_time, end_time, aspect_ratio, is_reEncode)
             print(command)
 
             #   subprocess.run(command, shell=True)

@@ -26,6 +26,9 @@ CONVERT_START = 4
 CONVERTING = 5
 CONVERT_COMPLETE = 6
 
+H264 = 1
+H265 = 2
+
 AR_KEEP = 0
 AR_16_9 = 1
 AR_4_3 = 2
@@ -145,11 +148,17 @@ def convertMP4():
     """ 処理実行
     """
     input_dir = folder_path1.get()
-    output_file = file_name1.get()
     s_time = start_time1.get()
     e_time = end_time1.get()
+    codec = codec1.get()
     apt = aspect1.get()
     is_re_enc = is_reEncode1.get()
+
+    codec_extention = {H264:"_h264.mp4", H265:"_h265.mp4"}
+    if codec in codec_extention:
+        output_file = file_name1.get().replace(".mp4", codec_extention[codec])
+    else:
+        output_file = file_name1.get()
 
     if not input_dir:
         messagebox.showinfo('エラー', '入力フォルダが指定されていません。')
@@ -168,7 +177,7 @@ def convertMP4():
     q = deque([])
     gather = asyncio.gather(
         lib_FFMPEG.analyze(q, input_dir),
-        lib_FFMPEG.convert(q, input_dir, output_file, s_time, e_time, apt, is_re_enc),
+        lib_FFMPEG.convert(q, input_dir, output_file, codec, s_time, e_time, apt, is_re_enc),
         progress(q)
     )
     loop.run_until_complete(gather)
@@ -293,6 +302,7 @@ folder_path1 = tkinter.StringVar()
 file_name1 = tkinter.StringVar()
 start_time1 = tkinter.StringVar()
 end_time1 = tkinter.StringVar()
+codec1 = tkinter.IntVar()
 aspect1 = tkinter.IntVar()
 is_reEncode1 = tkinter.IntVar()
 is_playVF1 = tkinter.IntVar()
@@ -321,6 +331,12 @@ starttime_box1 = ttk.Entry(tab1, textvariable=start_time1)
 # ウィジェット（終了時間）
 endtime_label1 = ttk.Label(tab1, text="終了時間:")
 endtime_box1 = ttk.Entry(tab1, textvariable=end_time1)
+
+# ウィジェット（コーデック）
+codecframe_labelframe1 = ttk.LabelFrame(tab1, relief='groove', text="コーデック", padding=(0, 0, 0, 0))
+codec_h264_radiobutton1 = ttk.Radiobutton(codecframe_labelframe1, text="H.264", value=H264, variable=codec1)
+codec_h265_radiobutton1 = ttk.Radiobutton(codecframe_labelframe1, text="H.265", value=H265, variable=codec1)
+codec1.set(H264)
 
 # ウィジェット（アスペクト比変更）
 aspectframe_labelframe1 = ttk.LabelFrame(tab1, relief='groove', text="アスペクト比")
@@ -357,10 +373,13 @@ starttime_label1.place(relx=0.067, rely=0.356, height=31, width=64)
 starttime_box1.place(relx=0.183, rely=0.356, height=27, relwidth=0.173)
 endtime_label1.place(relx=0.067, rely=0.444, height=31, width=64)
 endtime_box1.place(relx=0.183, rely=0.444, height=27, relwidth=0.173)
-aspectframe_labelframe1.place(relx=0.517, rely=0.333, relheight=0.278, relwidth=0.367)
-aspect_keep_radiobutton1.place(relx=0.091, rely=0.16, relheight=0.28, relwidth=0.586, bordermode='ignore')
-aspect_16_9_radiobutton1.place(relx=0.091, rely=0.4, relheight=0.28, relwidth=0.445, bordermode='ignore')
-aspect_4_3_radiobutton1.place(relx=0.091, rely=0.64, relheight=0.28, relwidth=0.277, bordermode='ignore')
+codecframe_labelframe1.place(relx=0.56, rely=0.333, relheight=0.38, relwidth=0.18)
+codec_h264_radiobutton1.place(relx=0.15, rely=0.25, relheight=0.25, relwidth=0.64, anchor='w', bordermode='ignore')
+codec_h265_radiobutton1.place(relx=0.15, rely=0.45, relheight=0.25, relwidth=0.64, anchor='w', bordermode='ignore')
+aspectframe_labelframe1.place(relx=0.75, rely=0.333, relheight=0.38, relwidth=0.18)
+aspect_keep_radiobutton1.place(relx=0.15, rely=0.25, relheight=0.25, relwidth=0.64, anchor='w', bordermode='ignore')
+aspect_16_9_radiobutton1.place(relx=0.15, rely=0.45, relheight=0.25, relwidth=0.64, anchor='w', bordermode='ignore')
+aspect_4_3_radiobutton1.place(relx=0.15, rely=0.65, relheight=0.25, relwidth=0.64, anchor='w', bordermode='ignore')
 reEncode_checkbutton1.place(relx=0.067, rely=0.578, relheight=0.078, relwidth=0.3)
 playVF_checkbutton1.place(relx=0.067, rely=0.644, relheight=0.078, relwidth=0.4)
 progressframe1.place(relx=0.05, rely=0.77, relheight=0.18, relwidth=0.642)
