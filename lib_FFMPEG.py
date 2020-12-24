@@ -102,10 +102,10 @@ def generate_convert_command(in_files, out_file, cd, stime, etime, asp, isRE):
 
     if cd == H264:      # H.264 パラメータ設定
         param = \
-            "-pix_fmt yuv444p10le -level:v 4.0 -crf 18 -preset veryfast -tune film -qcomp 0.75 -vcodec libx264 "
+            "-pix_fmt yuv444p10le -level:v 4.0 -crf 18 -preset veryfast -tune film -qcomp 0.75 -max_muxing_queue_size 9999 -vcodec libx264 "
     elif cd == H265:    # H.265 パラメータ設定
         param = \
-            "-pix_fmt yuv444p10le -level:v 4.0 -preset veryfast " + \
+            "-pix_fmt yuv444p10le -level:v 4.0 -preset veryfast -max_muxing_queue_size 9999 " + \
             "-vcodec libx265 -x265-params " + '"' + \
             "ctu=32:max-tu-size=16:crf=20.0:tu-intra-depth=2:" + \
             "tu-inter-depth=2:rdpenalty=2:me=3:subme=5:merange=44:b-intra=1:amp=0:ref=5:" + \
