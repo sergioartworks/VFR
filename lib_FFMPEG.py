@@ -125,13 +125,13 @@ def generate_convert_command(in_files, out_file, cd, stime, etime, asp, isRE):
 
     if asp == AR_KEEP:            # アスペクト比
         aspect = ""
-        bwdif = "-vf bwdif=1,pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
+        bwdif = "-vf bwdif=1,pp=dr,unsharp=5:5:0.8:3:3:0.4,hqdn3d "
     elif asp == AR_16_9:
         aspect = "-aspect 16:9 "
-        bwdif = "-vf pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
+        bwdif = "-vf pp=dr,unsharp=5:5:0.8:3:3:0.4,hqdn3d "
     elif asp == AR_4_3:
         aspect = "-aspect 4:3 "
-        bwdif = "-vf pp=dr,unsharp=5:5:0.20:5:5:0.10,hqdn3d "
+        bwdif = "-vf pp=dr,unsharp=5:5:0.8:3:3:0.4,hqdn3d "
 
     if isRE == NO and (not stime and not etime):        # 音声再エンコード
         acopy = "-acodec copy "
