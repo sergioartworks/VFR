@@ -47,7 +47,7 @@ def timedelta_value(tc):
     return timedelta(hours = int(h), minutes = int(m), seconds = int(s), microseconds = int(ms))
 
 
-async def analyze(que, folder_path):
+async def analyze(que, folder_path, stime, etime):
 
     global duration_total
     global is_analyze_complete
@@ -57,12 +57,25 @@ async def analyze(que, folder_path):
 
     input_dir = Path(folder_path)
     input_files = sorted(input_dir.glob("**/*"))
+
+    if not stime:                          # 開始時間
+        ss = ""
+    else:
+        ss = "-ss " + stime + " "
+        
+    if not etime:                          # 終了時間
+        to = ""
+    else:
+        to = "-to " + etime + " "
+
     t = (ANALYZE_START, duration_total, 0)
     que.append(t)
     await asyncio.sleep(0.01)
 
     command = \
             "ffmpeg " + \
+            ss + \
+            to + \
             '-i "concat:' + "|".join([i.as_posix() for i in input_files]) + '" ' + \
             "-c:v h264_nvenc " + \
             "-f null -"
@@ -118,7 +131,7 @@ def generate_convert_command(in_files, out_file, cd, stime, etime, asp, isRE):
     else:
         ss = "-ss " + stime + " "
         
-    if not etime:                           # 終了時間
+    if not etime:                          # 終了時間
         to = ""
     else:
         to = "-to " + etime + " "

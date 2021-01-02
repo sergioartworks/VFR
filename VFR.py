@@ -176,7 +176,7 @@ def convertMP4():
     # 変換実行
     q = deque([])
     gather = asyncio.gather(
-        lib_FFMPEG.analyze(q, input_dir),
+        lib_FFMPEG.analyze(q, input_dir, s_time, e_time),
         lib_FFMPEG.convert(q, input_dir, output_file, codec, s_time, e_time, apt, is_re_enc),
         progress(q)
     )
